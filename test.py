@@ -1,3 +1,4 @@
 #! /usr/bin/env python
 #coding=utf-8
-print "test"
+str=input('input ')
+print str
