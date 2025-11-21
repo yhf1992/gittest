@@ -1,0 +1,380 @@
+openapi: 3.0.0
+info:
+  title: Combat Engine API
+  description: Turn-based combat simulation system with deterministic damage formulas, elemental modifiers, and status effects
+  version: 1.0.0
+  contact:
+    name: Combat Engine Team
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:5000
+    description: Local development server
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      tags:
+        - Health
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /combat/simulate:
+    post:
+      summary: Simulate a combat between player and opponent
+      tags:
+        - Combat
+      operationId: simulateCombat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CombatRequest'
+            example:
+              player:
+                character_id: player_1
+                name: Hero
+                character_class: warrior
+                level: 5
+                max_hp: 100
+                attack: 20
+                defense: 15
+                speed: 10
+                element: fire
+              opponent:
+                character_id: monster_1
+                name: Goblin
+                character_class: rogue
+                level: 3
+                max_hp: 50
+                attack: 15
+                defense: 8
+                speed: 12
+                element: neutral
+              seed: 12345
+      responses:
+        '200':
+          description: Combat simulation completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CombatLog'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /combat/character-classes:
+    get:
+      summary: Get available character classes
+      tags:
+        - Combat
+      operationId: getCharacterClasses
+      responses:
+        '200':
+          description: List of available character classes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  classes:
+                    type: array
+                    items:
+                      type: string
+                      enum: [warrior, mage, rogue, paladin]
+                    example: [warrior, mage, rogue, paladin]
+
+  /combat/elements:
+    get:
+      summary: Get available elements
+      tags:
+        - Combat
+      operationId: getElements
+      responses:
+        '200':
+          description: List of available elements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  elements:
+                    type: array
+                    items:
+                      type: string
+                      enum: [fire, water, earth, wind, neutral]
+                    example: [fire, water, earth, wind, neutral]
+
+components:
+  schemas:
+    CharacterClass:
+      type: string
+      enum: [warrior, mage, rogue, paladin]
+      description: Character class determines unique combat abilities
+
+    ElementType:
+      type: string
+      enum: [fire, water, earth, wind, neutral]
+      description: Element type determines damage modifiers against other elements
+
+    StatusEffectType:
+      type: string
+      enum:
+        - stun
+        - dot
+        - defense_debuff
+        - multi_hit
+        - attack_buff
+        - defense_buff
+        - heal_over_time
+      description: Type of status effect
+
+    CharacterInput:
+      type: object
+      required:
+        - character_id
+        - name
+        - character_class
+        - level
+        - max_hp
+        - attack
+        - defense
+        - speed
+        - element
+      properties:
+        character_id:
+          type: string
+          description: Unique identifier for the character
+          example: player_1
+        name:
+          type: string
+          description: Character display name
+          example: Hero
+        character_class:
+          $ref: '#/components/schemas/CharacterClass'
+        level:
+          type: integer
+          minimum: 1
+          description: Character level for stat scaling
+          example: 5
+        max_hp:
+          type: integer
+          minimum: 1
+          description: Maximum health points
+          example: 100
+        current_hp:
+          type: integer
+          minimum: 0
+          description: Current health points (defaults to max_hp)
+          example: 100
+        attack:
+          type: integer
+          minimum: 0
+          description: Attack stat for damage calculation
+          example: 20
+        defense:
+          type: integer
+          minimum: 0
+          description: Defense stat for damage mitigation
+          example: 15
+        speed:
+          type: integer
+          minimum: 0
+          description: Speed stat for turn order and multi-hit
+          example: 10
+        element:
+          $ref: '#/components/schemas/ElementType'
+
+    StatusEffect:
+      type: object
+      properties:
+        effect_type:
+          $ref: '#/components/schemas/StatusEffectType'
+        value:
+          type: integer
+          description: Damage per turn for DoT, bonus amount for buffs
+          example: 5
+        duration:
+          type: integer
+          minimum: 0
+          description: Number of turns remaining
+          example: 3
+        source_character_id:
+          type: string
+          description: ID of character that applied the effect
+          example: player_1
+
+    Character:
+      type: object
+      properties:
+        character_id:
+          type: string
+        name:
+          type: string
+        character_class:
+          $ref: '#/components/schemas/CharacterClass'
+        level:
+          type: integer
+        max_hp:
+          type: integer
+        current_hp:
+          type: integer
+        attack:
+          type: integer
+        defense:
+          type: integer
+        speed:
+          type: integer
+        element:
+          $ref: '#/components/schemas/ElementType'
+        status_effects:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatusEffect'
+        is_alive:
+          type: boolean
+
+    CombatAction:
+      type: object
+      properties:
+        actor_id:
+          type: string
+          description: ID of character taking the action
+        target_id:
+          type: string
+          description: ID of target character
+        action_type:
+          type: string
+          enum: [attack, heal, defend, skill]
+          description: Type of action performed
+        damage_dealt:
+          type: integer
+          minimum: 0
+          description: Total damage inflicted (includes multi-hits)
+        healing_done:
+          type: integer
+          minimum: 0
+          description: Total healing applied
+        status_effects_applied:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatusEffect'
+          description: Status effects applied by this action
+        is_crit:
+          type: boolean
+          description: Whether attack was a critical hit
+        is_miss:
+          type: boolean
+          description: Whether attack missed
+        is_stun:
+          type: boolean
+          description: Whether actor was stunned this turn
+        multi_hit_count:
+          type: integer
+          minimum: 1
+          description: Number of hits in this attack
+          example: 1
+
+    CombatTurn:
+      type: object
+      properties:
+        turn_number:
+          type: integer
+          minimum: 1
+          description: Sequential turn number in combat
+        actor_id:
+          type: string
+          description: ID of character taking their turn
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/CombatAction'
+          description: Actions taken during this turn
+        actor_status_before:
+          $ref: '#/components/schemas/Character'
+          description: Actor character state before turn
+        actor_status_after:
+          $ref: '#/components/schemas/Character'
+          description: Actor character state after turn
+        target_status_before:
+          $ref: '#/components/schemas/Character'
+          description: Target character state before turn
+        target_status_after:
+          $ref: '#/components/schemas/Character'
+          description: Target character state after turn
+
+    CombatRequest:
+      type: object
+      required:
+        - player
+        - opponent
+      properties:
+        player:
+          $ref: '#/components/schemas/CharacterInput'
+          description: Player character
+        opponent:
+          $ref: '#/components/schemas/CharacterInput'
+          description: Opponent character (NPC or monster)
+        seed:
+          type: integer
+          description: Optional seed for deterministic random number generation
+          example: 12345
+
+    CombatLog:
+      type: object
+      properties:
+        combat_id:
+          type: string
+          format: uuid
+          description: Unique identifier for this combat session
+        player:
+          $ref: '#/components/schemas/Character'
+        opponent:
+          $ref: '#/components/schemas/Character'
+        turns:
+          type: array
+          items:
+            $ref: '#/components/schemas/CombatTurn'
+          description: Sequence of turns in chronological order
+        winner_id:
+          type: string
+          nullable: true
+          description: Character ID of winner (null if draw)
+        total_turns:
+          type: integer
+          minimum: 0
+          description: Total number of turns in combat
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Combat
+    description: Combat simulation endpoints
