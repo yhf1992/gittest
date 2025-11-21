@@ -1,0 +1,258 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id                String   @id @default(cuid())
+  username          String   @unique
+  email             String?  @unique
+  level             Int      @default(1)
+  experience        BigInt   @default(0)
+  cultivationTierId String
+  currentHp         Int      @default(100)
+  maxHp             Int      @default(100)
+  currentMp         Int      @default(50)
+  maxMp             Int      @default(50)
+  attack            Int      @default(10)
+  defense           Int      @default(5)
+  speed             Int      @default(10)
+  critRate          Float    @default(0.05)
+  critDamage        Float    @default(1.5)
+  gold              BigInt   @default(0)
+  spiritStones      BigInt   @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  cultivationTier   CultivationTier @relation(fields: [cultivationTierId], references: [id])
+  inventory         PlayerInventory[]
+  equipment         PlayerEquipment[]
+  dungeonProgress   PlayerDungeonProgress[]
+  completedDungeons PlayerDungeonHistory[]
+
+  @@map("players")
+}
+
+model CultivationTier {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String?
+  level       Int    @unique
+  minExp      BigInt
+  maxHp       Int
+  maxMp       Int
+  attack      Int
+  defense     Int
+  speed       Int
+  multiplier  Float  @default(1.0) // Stat multiplier for this tier
+  createdAt   DateTime @default(now())
+
+  // Relations
+  players Player[]
+
+  @@map("cultivation_tiers")
+}
+
+model EquipmentType {
+  id          String @id @default(cuid())
+  name        String @unique
+  slot        String // EquipmentSlot enum as string
+  description String?
+
+  // Relations
+  equipment Equipment[]
+
+  @@map("equipment_types")
+}
+
+model Equipment {
+  id           String       @id @default(cuid())
+  name         String
+  typeId       String
+  rarity       String // EquipmentRarity enum as string
+  level        Int          @default(1)
+  baseAttack   Int          @default(0)
+  baseDefense  Int          @default(0)
+  baseSpeed    Int          @default(0)
+  baseHp       Int          @default(0)
+  baseMp       Int          @default(0)
+  critRate     Float        @default(0)
+  critDamage   Float        @default(0)
+  effects      String   @default("") // JSON string of special effects
+  description  String?
+  createdAt    DateTime     @default(now())
+
+  // Relations
+  type         EquipmentType @relation(fields: [typeId], references: [id])
+  playerItems  PlayerInventory[]
+  playerEquips PlayerEquipment[]
+  lootDrops    LootItem[] @relation("LootEquipment")
+
+  @@map("equipment")
+}
+
+model PlayerInventory {
+  id         String   @id @default(cuid())
+  playerId   String
+  equipmentId String
+  quantity   Int      @default(1)
+  createdAt  DateTime @default(now())
+
+  // Relations
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  equipment  Equipment @relation(fields: [equipmentId], references: [id])
+
+  @@unique([playerId, equipmentId])
+  @@map("player_inventory")
+}
+
+model PlayerEquipment {
+  id         String   @id @default(cuid())
+  playerId   String
+  equipmentId String
+  createdAt  DateTime @default(now())
+
+  // Relations
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  equipment  Equipment @relation(fields: [equipmentId], references: [id])
+
+  @@unique([playerId, equipmentId])
+  @@map("player_equipment")
+}
+
+model Monster {
+  id          String       @id @default(cuid())
+  name        String
+  type        String // MonsterType enum as string
+  level       Int
+  hp          Int
+  mp          Int
+  attack      Int
+  defense     Int
+  speed       Int
+  critRate    Float        @default(0.05)
+  critDamage  Float        @default(1.5)
+  goldReward  BigInt
+  expReward   BigInt
+  lootTableId String?
+  description String?
+  createdAt   DateTime     @default(now())
+
+  // Relations
+  lootTable   LootTable?   @relation(fields: [lootTableId], references: [id])
+  dungeonMonsters DungeonMonster[]
+
+  @@map("monsters")
+}
+
+model LootTable {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  monsters    Monster[]
+  items       LootItem[]
+
+  @@map("loot_tables")
+}
+
+model LootItem {
+  id          String      @id @default(cuid())
+  lootTableId String
+  equipmentId String?
+  gold        BigInt?
+  spiritStones BigInt?
+  dropRate    Float       // 0.0 to 1.0
+  minQuantity Int         @default(1)
+  maxQuantity Int         @default(1)
+
+  // Relations
+  lootTable   LootTable   @relation(fields: [lootTableId], references: [id], onDelete: Cascade)
+  equipment   Equipment?  @relation("LootEquipment", fields: [equipmentId], references: [id])
+
+  @@map("loot_items")
+}
+
+model Dungeon {
+  id            String         @id @default(cuid())
+  name          String
+  description   String?
+  difficulty    String // DungeonDifficulty enum as string
+  minLevel      Int
+  maxLevel      Int?
+  goldReward    BigInt
+  expReward     BigInt
+  completionTime Int?         // In minutes
+  energyCost    Int           @default(10)
+  rewardMultiplier Float        @default(1.0)
+  createdAt     DateTime       @default(now())
+
+  // Relations
+  monsters      DungeonMonster[]
+  playerProgress PlayerDungeonProgress[]
+  completedBy   PlayerDungeonHistory[]
+
+  @@map("dungeons")
+}
+
+model DungeonMonster {
+  id        String   @id @default(cuid())
+  dungeonId String
+  monsterId String
+  quantity  Int      @default(1)
+  position  Int?     // Position in dungeon (1, 2, 3...)
+
+  // Relations
+  dungeon   Dungeon @relation(fields: [dungeonId], references: [id], onDelete: Cascade)
+  monster   Monster @relation(fields: [monsterId], references: [id])
+
+  @@map("dungeon_monsters")
+}
+
+model PlayerDungeonProgress {
+  id         String   @id @default(cuid())
+  playerId   String
+  dungeonId  String
+  progress   Int      @default(0) // Current stage/progress
+  bestTime   Int?     // Best completion time in minutes
+  attempts   Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  dungeon    Dungeon  @relation(fields: [dungeonId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, dungeonId])
+  @@map("player_dungeon_progress")
+}
+
+model PlayerDungeonHistory {
+  id         String   @id @default(cuid())
+  playerId   String
+  dungeonId  String
+  completedAt DateTime @default(now())
+  timeSpent  Int      // Time spent in minutes
+  stars      Int      @default(1) // 1-3 stars rating
+  goldEarned BigInt
+  expEarned  BigInt
+
+  // Relations
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  dungeon    Dungeon  @relation(fields: [dungeonId], references: [id])
+
+  @@map("player_dungeon_history")
+}
+
+// Note: Enums are defined as strings in the models for SQLite compatibility
+// The enum values are defined in src/types/index.ts for TypeScript support
