@@ -4,7 +4,10 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "composite": true,
-    "declaration": false
+    "baseUrl": ".",
+    "paths": {
+      "@xianxia/shared": ["../shared/src", "../shared/dist"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules", "**/*.test.*"],

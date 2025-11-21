@@ -8,11 +8,11 @@ global.fetch = vi.fn();
 describe('App', () => {
   it('renders the main title', () => {
     render(<App />);
-    expect(screen.getByText('Xianxia Mini-RPG')).toBeInTheDocument();
+    expect(screen.getByText('Xianxia Mini-RPG')).toBeTruthy();
   });
 
   it('shows loading state initially', () => {
     render(<App />);
-    expect(screen.getByText('Checking server status...')).toBeInTheDocument();
+    expect(screen.getByText('Checking server status...')).toBeTruthy();
   });
 });
