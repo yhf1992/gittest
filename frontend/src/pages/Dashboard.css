@@ -1,0 +1,223 @@
+/* Additional dashboard-specific styles */
+.dashboard-container {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Character stat animations */
+.stat-item {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.stat-item:hover::before {
+  left: 100%;
+}
+
+.stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2);
+  border-color: #8b7355;
+}
+
+/* Cultivation level glow effect */
+.cultivation-level {
+  position: relative;
+  animation: subtleGlow 3s ease-in-out infinite;
+}
+
+@keyframes subtleGlow {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(147, 112, 219, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(147, 112, 219, 0.5);
+  }
+}
+
+/* Experience bar animation */
+.experience-fill {
+  position: relative;
+  overflow: hidden;
+}
+
+.experience-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Action button hover effects */
+.action-btn {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  transform: translateY(-3px) rotateX(5deg);
+}
+
+.action-btn:active {
+  transform: translateY(-1px) rotateX(2deg);
+}
+
+/* Header animation */
+.header {
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* User info card entrance animation */
+.user-info {
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Quick actions entrance animation */
+.quick-actions {
+  animation: slideUp 0.7s ease-out;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 480px) {
+  .stat-value {
+    font-size: 1.2rem !important;
+  }
+  
+  .cultivation-level {
+    font-size: 0.9rem !important;
+    padding: 6px 12px;
+  }
+  
+  .action-btn {
+    padding: 15px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Loading state for dashboard */
+.dashboard-container .loading {
+  min-height: 60vh;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dashboard-container .loading::after {
+  content: 'Loading your cultivation data...';
+  color: #a08060;
+  font-size: 1.1rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Error message styling in dashboard */
+.dashboard-container .error-message {
+  margin: 20px auto;
+  max-width: 600px;
+  text-align: center;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-10px);
+  }
+  75% {
+    transform: translateX(10px);
+  }
+}
+
+/* User stats hover effect */
+.stats-grid {
+  perspective: 1000px;
+}
+
+.stat-item:hover {
+  background: linear-gradient(135deg, rgba(30, 25, 40, 0.95), rgba(40, 35, 50, 0.95));
+}
+
+/* Experience bar hover effect */
+.experience-bar:hover .experience-progress {
+  transform: scaleY(1.1);
+  transition: transform 0.3s ease;
+}
+
+/* Action button icon styling */
+.action-btn::before {
+  font-size: 1.5rem;
+  display: block;
+  margin-bottom: 8px;
+  opacity: 0.8;
+}
+
+.action-btn:hover::before {
+  opacity: 1;
+}

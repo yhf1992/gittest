@@ -4,11 +4,15 @@ Flask API for combat simulation service.
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from typing import Dict, Any
+import jwt
+import datetime as dt
+from functools import wraps
 
 from .models import (
     Character, CharacterClass, ElementType,
     EquipmentSlot, ItemRarity, MonsterTier, DungeonDifficulty,
-    PlayerInventory, Equipment, Dungeon, DungeonRun
+    PlayerInventory, Equipment, Dungeon, DungeonRun,
+    User, PlayerCharacter, CultivationLevel
 )
 from .engine import CombatSimulator
 from .equipment import EquipmentGenerator, InventoryManager
@@ -21,19 +25,212 @@ def create_app() -> Flask:
     app = Flask(__name__)
     CORS(app)
     
-    # Initialize managers
+    # Secret key for JWT
+    app.config['SECRET_KEY'] = 'xianxia_combat_engine_secret_key_2024'
+    
+    # Initialize managers and storage
     dungeon_manager = DungeonManager()
     loot_tables = {}
+    
+    # In-memory user storage (in production, use a database)
+    users = {}
+    player_characters = {}
     
     # Create default loot tables
     for tier in MonsterTier:
         table_id = f"default_{tier.value}"
         loot_tables[table_id] = LootTableManager.create_default_loot_table(tier, table_id)
 
+    def token_required(f):
+        """Decorator to require JWT token for endpoints."""
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            token = request.headers.get('Authorization')
+            if not token:
+                return jsonify({"error": "Token is missing"}), 401
+            
+            try:
+                # Remove 'Bearer ' prefix if present
+                if token.startswith('Bearer '):
+                    token = token[7:]
+                
+                data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+                current_user_id = data['user_id']
+                
+                # Verify user exists
+                if current_user_id not in users:
+                    return jsonify({"error": "Invalid token - user not found"}), 401
+                    
+            except jwt.ExpiredSignatureError:
+                return jsonify({"error": "Token has expired"}), 401
+            except jwt.InvalidTokenError:
+                return jsonify({"error": "Token is invalid"}), 401
+            
+            return f(current_user_id, *args, **kwargs)
+        return decorated
+
     @app.route("/health", methods=["GET"])
     def health_check():
         """Health check endpoint."""
         return jsonify({"status": "ok"}), 200
+
+    # Authentication endpoints
+    @app.route("/auth/register", methods=["POST"])
+    def register():
+        """
+        Register a new user.
+        
+        Expected request body:
+        {
+            "username": "testuser",
+            "email": "test@example.com",
+            "password": "password123"
+        }
+        """
+        try:
+            data = request.get_json()
+            
+            if not data or not all(k in data for k in ["username", "email", "password"]):
+                return jsonify({"error": "Missing required fields: username, email, password"}), 400
+            
+            username = data["username"]
+            email = data["email"]
+            password = data["password"]
+            
+            # Check if user already exists
+            for user in users.values():
+                if user.username == username:
+                    return jsonify({"error": "Username already exists"}), 400
+                if user.email == email:
+                    return jsonify({"error": "Email already exists"}), 400
+            
+            # Create new user
+            user = User(
+                username=username,
+                email=email,
+                password_hash=User.hash_password(password)
+            )
+            
+            users[user.user_id] = user
+            
+            # Create initial character for the user
+            character = PlayerCharacter(
+                user_id=user.user_id,
+                name=username,
+                character_class=CharacterClass.WARRIOR,
+                level=1,
+                max_hp=100,
+                current_hp=100,
+                attack=20,
+                defense=15,
+                speed=10,
+                element=ElementType.NEUTRAL
+            )
+            
+            player_characters[character.character_id] = character
+            
+            # Generate token
+            token = jwt.encode({
+                'user_id': user.user_id,
+                'exp': dt.datetime.utcnow() + dt.timedelta(hours=24)
+            }, app.config['SECRET_KEY'], algorithm='HS256')
+            
+            return jsonify({
+                "message": "User registered successfully",
+                "user": user.to_dict(),
+                "character": character.to_dict(),
+                "token": token
+            }), 201
+            
+        except Exception as e:
+            return jsonify({"error": f"Registration failed: {str(e)}"}), 500
+
+    @app.route("/auth/login", methods=["POST"])
+    def login():
+        """
+        Login user and return JWT token.
+        
+        Expected request body:
+        {
+            "username": "testuser",
+            "password": "password123"
+        }
+        """
+        try:
+            data = request.get_json()
+            
+            if not data or not all(k in data for k in ["username", "password"]):
+                return jsonify({"error": "Missing required fields: username, password"}), 400
+            
+            username = data["username"]
+            password = data["password"]
+            
+            # Find user by username
+            user = None
+            for u in users.values():
+                if u.username == username:
+                    user = u
+                    break
+            
+            if not user or not user.verify_password(password):
+                return jsonify({"error": "Invalid username or password"}), 401
+            
+            # Update last login
+            user.last_login = dt.datetime.now()
+            
+            # Get user's character
+            character = None
+            for char in player_characters.values():
+                if char.user_id == user.user_id:
+                    character = char
+                    break
+            
+            # Generate token
+            token = jwt.encode({
+                'user_id': user.user_id,
+                'exp': dt.datetime.utcnow() + dt.timedelta(hours=24)
+            }, app.config['SECRET_KEY'], algorithm='HS256')
+            
+            return jsonify({
+                "message": "Login successful",
+                "user": user.to_dict(),
+                "character": character.to_dict() if character else None,
+                "token": token
+            }), 200
+            
+        except Exception as e:
+            return jsonify({"error": f"Login failed: {str(e)}"}), 500
+
+    @app.route("/auth/profile", methods=["GET"])
+    @token_required
+    def get_profile(current_user_id):
+        """Get current user profile."""
+        try:
+            user = users.get(current_user_id)
+            if not user:
+                return jsonify({"error": "User not found"}), 404
+            
+            # Get user's character
+            character = None
+            for char in player_characters.values():
+                if char.user_id == user.user_id:
+                    character = char
+                    break
+            
+            return jsonify({
+                "user": user.to_dict(),
+                "character": character.to_dict() if character else None
+            }), 200
+            
+        except Exception as e:
+            return jsonify({"error": f"Failed to get profile: {str(e)}"}), 500
+
+    @app.route("/auth/cultivation-levels", methods=["GET"])
+    def get_cultivation_levels():
+        """Get available cultivation levels."""
+        return jsonify({
+            "cultivation_levels": [level.value for level in CultivationLevel]
+        }), 200
 
     @app.route("/combat/simulate", methods=["POST"])
     def simulate_combat():
