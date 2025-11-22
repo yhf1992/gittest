@@ -44,7 +44,7 @@ const Dashboard = () => {
         navigate('/equipment');
         break;
       case 'dungeon':
-        alert('Dungeon system coming soon!');
+        navigate('/dungeons');
         break;
       default:
         break;

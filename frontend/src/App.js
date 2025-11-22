@@ -6,6 +6,9 @@ import Dashboard from './pages/Dashboard';
 import MonsterSelection from './pages/MonsterSelection';
 import CombatViewer from './pages/CombatViewer';
 import EquipmentManager from './pages/EquipmentManager';
+import DungeonSelection from './pages/DungeonSelection';
+import DungeonRun from './pages/DungeonRun';
+import DungeonCompletion from './pages/DungeonCompletion';
 import './App.css';
 
 function ProtectedRoute({ children }) {
@@ -49,6 +52,30 @@ function App() {
               element={
                 <ProtectedRoute>
                   <EquipmentManager />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/dungeons" 
+              element={
+                <ProtectedRoute>
+                  <DungeonSelection />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/dungeon-run" 
+              element={
+                <ProtectedRoute>
+                  <DungeonRun />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/dungeon-completion" 
+              element={
+                <ProtectedRoute>
+                  <DungeonCompletion />
                 </ProtectedRoute>
               }
             />
