@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import MonsterSelection from './pages/MonsterSelection';
 import CombatViewer from './pages/CombatViewer';
+import EquipmentManager from './pages/EquipmentManager';
 import './App.css';
 
 function ProtectedRoute({ children }) {
@@ -42,6 +43,14 @@ function App() {
                   <CombatViewer />
                 </ProtectedRoute>
               } 
+            />
+            <Route 
+              path="/equipment" 
+              element={
+                <ProtectedRoute>
+                  <EquipmentManager />
+                </ProtectedRoute>
+              }
             />
             <Route path="/" element={<Navigate to="/dashboard" />} />
           </Routes>
