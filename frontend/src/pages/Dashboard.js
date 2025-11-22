@@ -41,7 +41,7 @@ const Dashboard = () => {
         navigate('/monster-selection');
         break;
       case 'equipment':
-        alert('Equipment management coming soon!');
+        navigate('/equipment');
         break;
       case 'dungeon':
         alert('Dungeon system coming soon!');

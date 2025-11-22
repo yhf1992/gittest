@@ -157,4 +157,87 @@ export const combatService = {
   },
 };
 
+export const equipmentService = {
+  generate: async (slot, itemLevel = 10, rarity, seed) => {
+    try {
+      const response = await api.post('/equipment/generate', {
+        slot,
+        item_level: itemLevel,
+        rarity,
+        seed,
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to generate equipment' };
+    }
+  },
+
+  getSlots: async () => {
+    try {
+      const response = await api.get('/equipment/slots');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to get equipment slots' };
+    }
+  },
+
+  getRarities: async () => {
+    try {
+      const response = await api.get('/equipment/rarities');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to get equipment rarities' };
+    }
+  },
+};
+
+export const inventoryService = {
+  create: async (playerId, currency = 0) => {
+    try {
+      const response = await api.post('/inventory/create', {
+        player_id: playerId,
+        currency,
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to create inventory' };
+    }
+  },
+
+  equip: async (playerId, itemId) => {
+    try {
+      const response = await api.post('/inventory/equip', {
+        player_id: playerId,
+        item_id: itemId,
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to equip item' };
+    }
+  },
+
+  unequip: async (playerId, slot) => {
+    try {
+      const response = await api.post('/inventory/unequip', {
+        player_id: playerId,
+        slot,
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to unequip item' };
+    }
+  },
+
+  stats: async (playerId) => {
+    try {
+      const response = await api.get('/inventory/stats', {
+        params: { player_id: playerId },
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to get inventory stats' };
+    }
+  },
+};
+
 export default api;
