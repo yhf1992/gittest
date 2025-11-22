@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './services/AuthContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import MonsterSelection from './pages/MonsterSelection';
+import CombatViewer from './pages/CombatViewer';
 import './App.css';
 
 function ProtectedRoute({ children }) {
@@ -22,6 +24,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/monster-selection" 
+              element={
+                <ProtectedRoute>
+                  <MonsterSelection />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/combat" 
+              element={
+                <ProtectedRoute>
+                  <CombatViewer />
                 </ProtectedRoute>
               } 
             />
