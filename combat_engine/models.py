@@ -4,6 +4,7 @@ Combat engine data models for characters, stats, and status effects.
 from enum import Enum
 from typing import List, Optional, Dict, Any
 from dataclasses import dataclass, field, asdict
+from datetime import datetime, date
 
 
 class ElementType(Enum):
@@ -32,6 +33,50 @@ class CharacterClass(Enum):
     MAGE = "mage"
     ROGUE = "rogue"
     PALADIN = "paladin"
+
+
+class EquipmentSlot(Enum):
+    """Equipment slots for characters."""
+    WEAPON = "weapon"
+    ARMOR = "armor"
+    ACCESSORY = "accessory"
+
+
+class ItemRarity(Enum):
+    """Item rarity levels with drop chance weights."""
+    COMMON = "common"
+    UNCOMMON = "uncommon"
+    RARE = "rare"
+    EPIC = "epic"
+    LEGENDARY = "legendary"
+
+
+class AffixType(Enum):
+    """Equipment affix types."""
+    ATTACK_BONUS = "attack_bonus"
+    DEFENSE_BONUS = "defense_bonus"
+    HP_BONUS = "hp_bonus"
+    SPEED_BONUS = "speed_bonus"
+    CRIT_CHANCE = "crit_chance"
+    ELEMENTAL_DAMAGE = "elemental_damage"
+    LIFESTEAL = "lifesteal"
+    PROC_DAMAGE = "proc_damage"
+
+
+class MonsterTier(Enum):
+    """Monster tiers for loot table configuration."""
+    TIER_1 = "tier_1"  # Common monsters
+    TIER_2 = "tier_2"  # Elite monsters
+    TIER_3 = "tier_3"  # Mini-bosses
+    TIER_4 = "tier_4"  # Boss monsters
+
+
+class DungeonDifficulty(Enum):
+    """Dungeon difficulty levels."""
+    EASY = "easy"
+    NORMAL = "normal"
+    HARD = "hard"
+    NIGHTMARE = "nightmare"
 
 
 @dataclass
@@ -250,4 +295,192 @@ class CombatLog:
             "turns": [t.to_dict() for t in self.turns],
             "winner_id": self.winner_id,
             "total_turns": self.total_turns,
+        }
+
+
+@dataclass
+class EquipmentAffix:
+    """Represents an equipment affix (bonus stat or effect)."""
+    affix_type: AffixType
+    value: int
+    element: Optional[ElementType] = None  # For elemental affixes
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary representation."""
+        result = {
+            "affix_type": self.affix_type.value,
+            "value": self.value,
+        }
+        if self.element:
+            result["element"] = self.element.value
+        return result
+
+
+@dataclass
+class Equipment:
+    """Represents an equipment item."""
+    item_id: str
+    name: str
+    slot: EquipmentSlot
+    rarity: ItemRarity
+    level_requirement: int
+    base_stats: Dict[str, int]  # Base attack, defense, etc.
+    affixes: List[EquipmentAffix] = field(default_factory=list)
+    special_proc: Optional[str] = None  # Special effect description
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary representation."""
+        return {
+            "item_id": self.item_id,
+            "name": self.name,
+            "slot": self.slot.value,
+            "rarity": self.rarity.value,
+            "level_requirement": self.level_requirement,
+            "base_stats": self.base_stats,
+            "affixes": [a.to_dict() for a in self.affixes],
+            "special_proc": self.special_proc,
+        }
+
+
+@dataclass
+class LootEntry:
+    """Represents a single entry in a loot table."""
+    item_id: Optional[str] = None  # None for currency/generic rewards
+    weight: int = 1
+    min_quantity: int = 1
+    max_quantity: int = 1
+    rarity: Optional[ItemRarity] = None
+    is_guaranteed: bool = False
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary representation."""
+        result = {
+            "weight": self.weight,
+            "min_quantity": self.min_quantity,
+            "max_quantity": self.max_quantity,
+            "is_guaranteed": self.is_guaranteed,
+        }
+        if self.item_id:
+            result["item_id"] = self.item_id
+        if self.rarity:
+            result["rarity"] = self.rarity.value
+        return result
+
+
+@dataclass
+class LootTable:
+    """Represents a loot table for monster drops."""
+    table_id: str
+    name: str
+    monster_tier: MonsterTier
+    entries: List[LootEntry] = field(default_factory=list)
+    currency_drops: List[LootEntry] = field(default_factory=list)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary representation."""
+        return {
+            "table_id": self.table_id,
+            "name": self.name,
+            "monster_tier": self.monster_tier.value,
+            "entries": [e.to_dict() for e in self.entries],
+            "currency_drops": [e.to_dict() for e in self.currency_drops],
+        }
+
+
+@dataclass
+class PlayerInventory:
+    """Represents a player's inventory and equipment."""
+    player_id: str
+    equipment: Dict[EquipmentSlot, Optional[Equipment]] = field(default_factory=dict)
+    inventory: List[Equipment] = field(default_factory=list)
+    currency: int = 0
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary representation."""
+        return {
+            "player_id": self.player_id,
+            "equipment": {slot.value: equip.to_dict() if equip else None 
+                         for slot, equip in self.equipment.items()},
+            "inventory": [item.to_dict() for item in self.inventory],
+            "currency": self.currency,
+        }
+
+
+@dataclass
+class DungeonRun:
+    """Represents a single dungeon run attempt."""
+    run_id: str
+    player_id: str
+    dungeon_id: str
+    difficulty: DungeonDifficulty
+    start_time: datetime
+    end_time: Optional[datetime] = None
+    completed: bool = False
+    floors_completed: int = 0
+    total_floors: int = 0
+    rewards_earned: List[Equipment] = field(default_factory=list)
+    currency_earned: int = 0
+    entry_cost: int = 0
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary representation."""
+        return {
+            "run_id": self.run_id,
+            "player_id": self.player_id,
+            "dungeon_id": self.dungeon_id,
+            "difficulty": self.difficulty.value,
+            "start_time": self.start_time.isoformat(),
+            "end_time": self.end_time.isoformat() if self.end_time else None,
+            "completed": self.completed,
+            "floors_completed": self.floors_completed,
+            "total_floors": self.total_floors,
+            "rewards_earned": [r.to_dict() for r in self.rewards_earned],
+            "currency_earned": self.currency_earned,
+            "entry_cost": self.entry_cost,
+        }
+
+
+@dataclass
+class Dungeon:
+    """Represents a dungeon with configuration."""
+    dungeon_id: str
+    name: str
+    description: str
+    difficulty: DungeonDifficulty
+    level_requirement: int
+    entry_cost: int
+    floors: int
+    daily_reset_count: int = 3  # Max attempts per day
+    reward_multiplier: float = 1.0
+    monster_tiers: List[MonsterTier] = field(default_factory=list)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary representation."""
+        return {
+            "dungeon_id": self.dungeon_id,
+            "name": self.name,
+            "description": self.description,
+            "difficulty": self.difficulty.value,
+            "level_requirement": self.level_requirement,
+            "entry_cost": self.entry_cost,
+            "floors": self.floors,
+            "daily_reset_count": self.daily_reset_count,
+            "reward_multiplier": self.reward_multiplier,
+            "monster_tiers": [t.value for t in self.monster_tiers],
+        }
+
+
+@dataclass
+class DailyResetInfo:
+    """Tracks daily reset information for players."""
+    player_id: str
+    date: date
+    dungeon_attempts: Dict[str, int] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary representation."""
+        return {
+            "player_id": self.player_id,
+            "date": self.date.isoformat(),
+            "dungeon_attempts": self.dungeon_attempts,
         }
