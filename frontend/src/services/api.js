@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -236,6 +236,68 @@ export const inventoryService = {
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Failed to get inventory stats' };
+    }
+  },
+};
+
+export const dungeonService = {
+  // Get all available dungeons
+  getDungeons: async () => {
+    try {
+      const response = await api.get('/dungeons');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to get dungeons' };
+    }
+  },
+
+  // Get specific dungeon information
+  getDungeon: async (dungeonId) => {
+    try {
+      const response = await api.get(`/dungeons/${dungeonId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to get dungeon' };
+    }
+  },
+
+  // Enter a dungeon and start a run
+  enterDungeon: async (playerId, dungeonId, character, inventory) => {
+    try {
+      const response = await api.post('/dungeons/enter', {
+        player_id: playerId,
+        dungeon_id: dungeonId,
+        character,
+        inventory,
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to enter dungeon' };
+    }
+  },
+
+  // Complete a dungeon run
+  completeDungeon: async (runId, playerId, inventory, floorsCompleted) => {
+    try {
+      const response = await api.post('/dungeons/complete', {
+        run_id: runId,
+        player_id: playerId,
+        inventory,
+        floors_completed: floorsCompleted,
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to complete dungeon' };
+    }
+  },
+
+  // Get available dungeon difficulties
+  getDifficulties: async () => {
+    try {
+      const response = await api.get('/dungeons/difficulties');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to get difficulties' };
     }
   },
 };
