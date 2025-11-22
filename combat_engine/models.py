@@ -5,6 +5,8 @@ from enum import Enum
 from typing import List, Optional, Dict, Any
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, date
+import hashlib
+import uuid
 
 
 class ElementType(Enum):
@@ -483,4 +485,86 @@ class DailyResetInfo:
             "player_id": self.player_id,
             "date": self.date.isoformat(),
             "dungeon_attempts": self.dungeon_attempts,
+        }
+
+
+class CultivationLevel(Enum):
+    """Xianxia cultivation levels."""
+    QI_GATHERING = "练气"  # Qi Gathering
+    FOUNDATION_ESTABLISHMENT = "筑基"  # Foundation Establishment
+    GOLDEN_CORE = "金丹"  # Golden Core
+    NASCENT_SOUL = "元婴"  # Nascent Soul
+    SOUL_FORMATION = "化神"  # Soul Formation
+    VOID_TRIBULATION = "渡劫"  # Void Tribulation
+
+
+@dataclass
+class User:
+    """User account for authentication."""
+    user_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    username: str = ""
+    email: str = ""
+    password_hash: str = ""
+    created_at: datetime = field(default_factory=datetime.now)
+    last_login: Optional[datetime] = None
+    cultivation_level: CultivationLevel = CultivationLevel.QI_GATHERING
+    experience: int = 0
+    level: int = 1
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary representation (excluding sensitive data)."""
+        return {
+            "user_id": self.user_id,
+            "username": self.username,
+            "email": self.email,
+            "created_at": self.created_at.isoformat(),
+            "last_login": self.last_login.isoformat() if self.last_login else None,
+            "cultivation_level": self.cultivation_level.value,
+            "experience": self.experience,
+            "level": self.level,
+        }
+    
+    @staticmethod
+    def hash_password(password: str) -> str:
+        """Hash password using SHA-256."""
+        return hashlib.sha256(password.encode()).hexdigest()
+    
+    def verify_password(self, password: str) -> bool:
+        """Verify password against hash."""
+        return self.password_hash == self.hash_password(password)
+
+
+@dataclass
+class PlayerCharacter:
+    """Player's character with stats for combat."""
+    character_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str = ""
+    name: str = ""
+    character_class: CharacterClass = CharacterClass.WARRIOR
+    level: int = 1
+    max_hp: int = 100
+    current_hp: int = 100
+    attack: int = 20
+    defense: int = 15
+    speed: int = 10
+    element: ElementType = ElementType.NEUTRAL
+    cultivation_level: CultivationLevel = CultivationLevel.QI_GATHERING
+    experience: int = 0
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary representation."""
+        return {
+            "character_id": self.character_id,
+            "user_id": self.user_id,
+            "name": self.name,
+            "character_class": self.character_class.value,
+            "level": self.level,
+            "max_hp": self.max_hp,
+            "current_hp": self.current_hp,
+            "attack": self.attack,
+            "defense": self.defense,
+            "speed": self.speed,
+            "element": self.element.value,
+            "cultivation_level": self.cultivation_level.value,
+            "experience": self.experience,
         }

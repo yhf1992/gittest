@@ -1,9 +1,10 @@
 # Combat Engine API
 
-A modular, turn-based combat simulation system with deterministic damage formulas, elemental modifiers, and status effects.
+A modular, turn-based combat simulation system with deterministic damage formulas, elemental modifiers, and status effects. Now includes a React frontend with xianxia-themed authentication and dashboard.
 
 ## Features
 
+### Backend
 - **Turn-based Combat System**: Alternating turns between player and opponent
 - **Deterministic Mechanics**: Reproducible combat results with seed-based randomization
 - **Elemental System**: Fire, Water, Earth, Wind, and Neutral elements with advantage/disadvantage modifiers
@@ -16,6 +17,40 @@ A modular, turn-based combat simulation system with deterministic damage formula
 - **Character Classes**: Warrior, Mage, Rogue, Paladin (each with unique mechanics)
 - **Combat Logging**: Step-by-step action logs for UI playback
 - **Tier Progression**: Level-based stat scaling
+- **Equipment System**: Procedural generation with rarity tiers and affixes
+- **Loot System**: Tiered monster drops with configurable tables
+- **Dungeon System**: Multi-floor runs with daily limits and rewards
+- **Authentication**: JWT-based user registration and login
+- **Xianxia Theme**: Cultivation levels (练气→渡劫) and themed progression
+
+### Frontend
+- **React 18 Application**: Modern React with hooks and routing
+- **Authentication UI**: Login/registration with xianxia styling
+- **Dashboard**: User profile, character stats, cultivation progress
+- **Session Management**: Token persistence and automatic refresh
+- **Xianxia Theme**: Dark mystical UI with ancient Chinese aesthetics
+- **Responsive Design**: Mobile and desktop compatible
+
+## Quick Start
+
+### Backend Only
+```bash
+cd /home/engine/project
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+
+### Full Stack (Backend + Frontend)
+```bash
+cd /home/engine/project
+./start-dev.sh
+```
+
+Then visit:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:5000
 
 ## Installation
 
@@ -307,6 +342,30 @@ for turn in combat_log.turns:
 
 The API follows RESTful conventions with JSON request/response bodies. See `/api-schema.yaml` for full OpenAPI 3.0 specification.
 
+## Frontend Usage
+
+### Authentication Flow
+1. **Register**: POST `/auth/register` with username, email, password
+2. **Login**: POST `/auth/login` with username, password
+3. **Access Protected Routes**: Include `Authorization: Bearer <token>` header
+4. **Session Persistence**: Frontend stores token in localStorage
+
+### Frontend Features
+- **Xianxia Theme**: Dark mystical UI with ancient Chinese aesthetics
+- **Cultivation Levels**: 练气 → 筑基 → 金丹 → 元婴 → 化神 → 渡劫
+- **Character Stats**: HP, Attack, Defense, Speed display
+- **Experience System**: Visual progress bars and level calculations
+- **Quick Actions**: Buttons for combat, equipment, dungeons
+
+### Frontend Setup
+```bash
+cd frontend
+npm install
+npm start
+```
+
+Visit http://localhost:3000 for the frontend interface.
+
 ## Architecture
 
 ```
@@ -314,13 +373,32 @@ combat_engine/
 ├── models.py          # Data models and enums
 ├── engine.py          # Combat logic and formulas
 ├── api.py             # Flask REST API
+├── equipment.py        # Equipment generation system
+├── loot.py           # Loot system and tables
+├── dungeon.py        # Dungeon management
 └── __init__.py        # Package exports
 
 tests/
 ├── test_models.py     # Model tests
-└── test_engine.py     # Engine and integration tests
+├── test_engine.py     # Engine and integration tests
+├── test_equipment.py  # Equipment system tests
+├── test_loot.py      # Loot system tests
+├── test_dungeon.py   # Dungeon system tests
+└── test_integration.py # Full workflow tests
+
+frontend/
+├── src/
+│   ├── components/    # Reusable React components
+│   ├── pages/        # Page components (Login, Dashboard)
+│   ├── services/     # API and authentication services
+│   ├── App.js        # Main React app
+│   └── index.js      # Entry point
+├── public/           # Static assets
+├── package.json      # Frontend dependencies
+└── README.md        # Frontend documentation
 
 app.py                 # Main server entry point
+start-dev.sh          # Development server script
 ```
 
 ## Design Decisions
