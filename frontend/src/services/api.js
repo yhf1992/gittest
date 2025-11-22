@@ -111,4 +111,50 @@ export const authService = {
   },
 };
 
+export const combatService = {
+  // Get available monsters
+  getMonsters: async () => {
+    try {
+      const response = await api.get('/monsters');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to get monsters' };
+    }
+  },
+
+  // Simulate combat
+  simulateCombat: async (player, opponent, seed = null) => {
+    try {
+      const response = await api.post('/combat/simulate', {
+        player,
+        opponent,
+        seed,
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Combat simulation failed' };
+    }
+  },
+
+  // Get character classes
+  getCharacterClasses: async () => {
+    try {
+      const response = await api.get('/combat/character-classes');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to get character classes' };
+    }
+  },
+
+  // Get elements
+  getElements: async () => {
+    try {
+      const response = await api.get('/combat/elements');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Failed to get elements' };
+    }
+  },
+};
+
 export default api;

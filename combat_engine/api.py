@@ -781,6 +781,125 @@ def create_app() -> Flask:
         """Get available dungeon difficulties."""
         return jsonify({"difficulties": [d.value for d in DungeonDifficulty]}), 200
 
+    @app.route("/monsters", methods=["GET"])
+    def get_monsters():
+        """
+        Get available monsters for combat.
+        Returns a list of monsters with their stats and loot preview.
+        """
+        monsters = [
+            {
+                "monster_id": "goblin_1",
+                "name": "Goblin Scout",
+                "character_class": CharacterClass.ROGUE.value,
+                "level": 3,
+                "max_hp": 50,
+                "attack": 15,
+                "defense": 8,
+                "speed": 12,
+                "element": ElementType.NEUTRAL.value,
+                "tier": MonsterTier.TIER_1.value,
+                "description": "A weak goblin scout prowling the forest",
+                "loot_preview": {
+                    "currency": "10-30 gold",
+                    "items": ["Common weapons", "Common armor"],
+                    "drop_chance": "Low"
+                }
+            },
+            {
+                "monster_id": "orc_warrior_1",
+                "name": "Orc Warrior",
+                "character_class": CharacterClass.WARRIOR.value,
+                "level": 5,
+                "max_hp": 120,
+                "attack": 25,
+                "defense": 18,
+                "speed": 8,
+                "element": ElementType.EARTH.value,
+                "tier": MonsterTier.TIER_2.value,
+                "description": "A sturdy orc warrior from the mountains",
+                "loot_preview": {
+                    "currency": "30-60 gold",
+                    "items": ["Uncommon weapons", "Uncommon armor"],
+                    "drop_chance": "Medium"
+                }
+            },
+            {
+                "monster_id": "fire_mage_1",
+                "name": "Fire Mage",
+                "character_class": CharacterClass.MAGE.value,
+                "level": 7,
+                "max_hp": 80,
+                "attack": 35,
+                "defense": 12,
+                "speed": 15,
+                "element": ElementType.FIRE.value,
+                "tier": MonsterTier.TIER_2.value,
+                "description": "A dangerous mage wielding fire magic",
+                "loot_preview": {
+                    "currency": "40-80 gold",
+                    "items": ["Rare accessories", "Uncommon armor"],
+                    "drop_chance": "Medium"
+                }
+            },
+            {
+                "monster_id": "shadow_assassin_1",
+                "name": "Shadow Assassin",
+                "character_class": CharacterClass.ROGUE.value,
+                "level": 9,
+                "max_hp": 100,
+                "attack": 40,
+                "defense": 15,
+                "speed": 25,
+                "element": ElementType.WIND.value,
+                "tier": MonsterTier.TIER_3.value,
+                "description": "A swift assassin cloaked in shadows",
+                "loot_preview": {
+                    "currency": "60-120 gold",
+                    "items": ["Rare weapons", "Rare armor"],
+                    "drop_chance": "High"
+                }
+            },
+            {
+                "monster_id": "dragon_knight_1",
+                "name": "Dragon Knight",
+                "character_class": CharacterClass.PALADIN.value,
+                "level": 12,
+                "max_hp": 200,
+                "attack": 45,
+                "defense": 35,
+                "speed": 10,
+                "element": ElementType.FIRE.value,
+                "tier": MonsterTier.TIER_4.value,
+                "description": "A legendary knight infused with dragon power",
+                "loot_preview": {
+                    "currency": "100-200 gold",
+                    "items": ["Epic weapons", "Epic armor", "Legendary accessories"],
+                    "drop_chance": "Very High"
+                }
+            },
+            {
+                "monster_id": "frost_giant_1",
+                "name": "Frost Giant",
+                "character_class": CharacterClass.WARRIOR.value,
+                "level": 10,
+                "max_hp": 250,
+                "attack": 50,
+                "defense": 30,
+                "speed": 5,
+                "element": ElementType.WATER.value,
+                "tier": MonsterTier.TIER_4.value,
+                "description": "A colossal giant from the frozen wastes",
+                "loot_preview": {
+                    "currency": "120-250 gold",
+                    "items": ["Epic armor", "Rare weapons", "Epic accessories"],
+                    "drop_chance": "Very High"
+                }
+            }
+        ]
+        
+        return jsonify({"monsters": monsters}), 200
+
     @app.errorhandler(404)
     def not_found(error):
         """Handle 404 errors."""

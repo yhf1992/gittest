@@ -10,7 +10,6 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [profileData, setProfileData] = useState(null);
-  const [cultivationLevels, setCultivationLevels] = useState([]);
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -21,10 +20,6 @@ const Dashboard = () => {
         // Get fresh profile data
         const profile = await authService.getProfile();
         setProfileData(profile);
-        
-        // Get cultivation levels for reference
-        const levels = await authService.getCultivationLevels();
-        setCultivationLevels(levels.cultivation_levels || []);
       } catch (err) {
         setError(err.error || 'Failed to load dashboard data');
       } finally {
@@ -41,18 +36,14 @@ const Dashboard = () => {
   };
 
   const handleQuickAction = (action) => {
-    // Placeholder for quick actions - these would navigate to different pages
     switch (action) {
       case 'fight':
-        // Navigate to combat page when implemented
-        alert('Combat system coming soon!');
+        navigate('/monster-selection');
         break;
       case 'equipment':
-        // Navigate to equipment page when implemented
         alert('Equipment management coming soon!');
         break;
       case 'dungeon':
-        // Navigate to dungeon page when implemented
         alert('Dungeon system coming soon!');
         break;
       default:
