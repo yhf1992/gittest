@@ -1,0 +1,41 @@
+import { afterEach, beforeEach, vi } from 'vitest';
+import { cleanup } from '@testing-library/react';
+import '@testing-library/jest-dom';
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+};
+global.localStorage = localStorageMock;
+
+// Mock fetch
+global.fetch = vi.fn();
+
+// Mock window.matchMedia for responsive testing
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(), // deprecated
+    removeListener: vi.fn(), // deprecated
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  localStorageMock.clear();
+});
+
+beforeEach(() => {
+  // Reset all mocks before each test
+  vi.resetAllMocks();
+});
