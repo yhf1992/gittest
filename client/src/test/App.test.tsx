@@ -1,18 +1,24 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import App from '../App';
 
-// Mock fetch
-global.fetch = vi.fn();
-
 describe('App', () => {
-  it('renders the main title', () => {
+  it('renders the component showcase', () => {
     render(<App />);
-    expect(screen.getByText('Xianxia Mini-RPG')).toBeTruthy();
+    expect(screen.getByText('Xianxia UI Component Library')).toBeInTheDocument();
   });
 
-  it('shows loading state initially', () => {
+  it('displays all component sections', () => {
     render(<App />);
-    expect(screen.getByText('Checking server status...')).toBeTruthy();
+    expect(screen.getByText('RarityBadge')).toBeInTheDocument();
+    expect(screen.getByText('StatusBadge')).toBeInTheDocument();
+    expect(screen.getByText('StatDisplay')).toBeInTheDocument();
+    expect(screen.getByText('EquipmentCard')).toBeInTheDocument();
+    expect(screen.getByText('CombatLogEntry')).toBeInTheDocument();
+  });
+
+  it('displays responsive design section', () => {
+    render(<App />);
+    expect(screen.getByText('Responsive Design')).toBeInTheDocument();
   });
 });
