@@ -1,0 +1,176 @@
+.combat-log-entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background-color: var(--color-bg-secondary);
+  border-left: 4px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.combat-log-entry:hover {
+  background-color: var(--color-bg-tertiary);
+  border-left-color: var(--color-accent-gold);
+}
+
+.combat-log-entry.critical-hit {
+  border-left-color: var(--status-dot);
+  background: linear-gradient(90deg, rgba(231, 76, 60, 0.1), var(--color-bg-secondary));
+}
+
+.combat-log-entry.miss {
+  border-left-color: var(--color-text-tertiary);
+  opacity: 0.7;
+}
+
+.combat-log-compact {
+  padding: var(--space-sm);
+  gap: var(--space-xs);
+}
+
+.combat-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.combat-log-turn {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.combat-log-type-icon {
+  font-size: 1.2em;
+  line-height: 1;
+}
+
+.combat-log-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.combat-log-participants {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+}
+
+.participant {
+  font-weight: 600;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+}
+
+.participant.attacker {
+  color: var(--color-accent-gold);
+  background-color: rgba(212, 175, 55, 0.1);
+}
+
+.participant.defender {
+  color: var(--color-text-primary);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.combat-arrow {
+  color: var(--color-text-tertiary);
+  font-size: 1.2em;
+}
+
+.combat-log-message {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.combat-log-damage,
+.combat-log-healing,
+.combat-log-miss {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-weight: 700;
+  font-family: var(--font-family-primary);
+}
+
+.combat-log-damage {
+  color: var(--status-dot);
+}
+
+.combat-log-healing {
+  color: var(--status-heal);
+}
+
+.combat-log-miss {
+  color: var(--color-text-tertiary);
+}
+
+.crit-indicator {
+  font-size: var(--font-size-xs);
+  color: var(--status-dot);
+  background-color: rgba(231, 76, 60, 0.2);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.miss-indicator {
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.damage-value,
+.healing-value {
+  font-size: var(--font-size-lg);
+}
+
+.combat-log-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-xs);
+}
+
+@media (max-width: 640px) {
+  .combat-log-participants {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+  }
+
+  .combat-arrow {
+    transform: rotate(90deg);
+  }
+}

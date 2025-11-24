@@ -1,0 +1,68 @@
+.rarity-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-family: var(--font-family-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.rarity-badge-sm {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-xs);
+}
+
+.rarity-badge-md {
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+}
+
+.rarity-badge-lg {
+  padding: var(--space-md) var(--space-lg);
+  font-size: var(--font-size-base);
+}
+
+.rarity-common {
+  background-color: rgba(158, 158, 158, 0.2);
+  color: var(--rarity-common);
+  border: 1px solid var(--rarity-common);
+}
+
+.rarity-uncommon {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: var(--rarity-uncommon);
+  border: 1px solid var(--rarity-uncommon);
+}
+
+.rarity-rare {
+  background-color: rgba(33, 150, 243, 0.2);
+  color: var(--rarity-rare);
+  border: 1px solid var(--rarity-rare);
+}
+
+.rarity-epic {
+  background-color: rgba(156, 39, 176, 0.2);
+  color: var(--rarity-epic);
+  border: 1px solid var(--rarity-epic);
+}
+
+.rarity-legendary {
+  background: linear-gradient(135deg, rgba(255, 152, 0, 0.2), rgba(255, 193, 7, 0.2));
+  color: var(--rarity-legendary);
+  border: 1px solid var(--rarity-legendary);
+  box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+  animation: legendary-pulse 2s ease-in-out infinite;
+}
+
+@keyframes legendary-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 152, 0, 0.6);
+  }
+}
