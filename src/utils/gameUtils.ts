@@ -1,5 +1,5 @@
-import { PrismaClient, EquipmentRarity, MonsterType, DungeonDifficulty } from '@prisma/client';
-import { Effect } from '../src/types';
+import { PrismaClient } from '@prisma/client';
+import { EquipmentRarity, MonsterType, DungeonDifficulty, Effect } from '../types';
 
 const prisma = new PrismaClient();
 
@@ -299,7 +299,7 @@ export class GameUtils {
 
     if (success) {
       // Calculate loot
-      const loot = await this.calculateLoot(monster.lootTableId);
+      const loot = await this.calculateLoot(monster.lootTableId ?? undefined);
       
       // Update player
       await prisma.player.update({
@@ -477,7 +477,7 @@ export class GameUtils {
     // Calculate rewards
     const goldReward = dungeon.goldReward * BigInt(Math.floor(dungeon.rewardMultiplier));
     const expReward = dungeon.expReward * BigInt(Math.floor(dungeon.rewardMultiplier));
-    const stars = this.calculateStars(timeSpent, dungeon.completionTime);
+    const stars = this.calculateStars(timeSpent, dungeon.completionTime ?? undefined);
 
     // Update progress
     await prisma.playerDungeonProgress.update({
