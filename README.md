@@ -1091,3 +1091,7 @@ start-dev.sh          # Development server script
 3. **Deep Copy for Simulation**: Original character objects are not modified during simulation
 4. **Status Effect Stacking**: Longer-duration effects replace shorter-duration ones of the same type
 5. **Class-based Abilities**: Each class has unique mechanics reflecting their role
+
+## Additional Documentation
+
+- [Game Balance and Mechanics Testing Checklist](GAME_BALANCE_TESTING_CHECKLIST.md) – Manual end-to-end testing guide covering cultivation progression, combat math, status effects, equipment scaling, dungeon difficulty, loot drops, and exploit hunting scenarios.
