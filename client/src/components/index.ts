@@ -3,3 +3,8 @@ export { StatusBadge } from './StatusBadge';
 export { StatDisplay } from './StatDisplay';
 export { EquipmentCard } from './EquipmentCard';
 export { CombatLogEntry } from './CombatLogEntry';
+export { GameDashboard } from './GameDashboard';
+export { CultivationProgress } from './CultivationProgress';
+export { EquipmentRack } from './EquipmentRack';
+export { CombatArena } from './CombatArena';
+export { DungeonExplorer } from './DungeonExplorer';
