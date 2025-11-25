@@ -222,7 +222,7 @@ class ServerGameUtils extends GameUtils {
     return equippedItem;
   }
 
-  static override async simulateBattle(playerId: string, monsterId: string): Promise<any> {
+  static async simulateCombat(playerId: string, monsterId: string): Promise<any> {
     const playerStats = await this.getPlayerStats(playerId);
     const monster = await prisma.monster.findUnique({
       where: { id: monsterId },
@@ -314,7 +314,7 @@ app.get('/api/players', async (_req, res) => {
       },
     });
     
-    const response: ApiResponse<Player[]> = {
+    const response: ApiResponse<any> = {
       success: true,
       data: players.map(p => ({
         ...p,
@@ -323,11 +323,11 @@ app.get('/api/players', async (_req, res) => {
           ...p.cultivationTier,
           description: p.cultivationTier.description || undefined
         } : undefined
-      })),
+      } as any)),
     };
     res.json(response);
   } catch (error) {
-    const response: ApiResponse<Player[]> = {
+    const response: ApiResponse<any> = {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
     };
@@ -403,7 +403,7 @@ app.post('/api/players/:id/equip', async (req, res) => {
 app.post('/api/players/:id/battle/:monsterId', async (req, res) => {
   try {
     const { id, monsterId } = req.params;
-    const result = await ServerGameUtils.simulateBattle(id, monsterId);
+    const result = await ServerGameUtils.simulateCombat(id, monsterId);
     
     const response: ApiResponse<any> = {
       success: true,
@@ -416,6 +416,235 @@ app.post('/api/players/:id/battle/:monsterId', async (req, res) => {
       error: error instanceof Error ? error.message : 'Unknown error',
     };
     res.status(500).json(response);
+  }
+});
+
+// Monster routes
+app.get('/api/monsters', async (_req, res) => {
+  try {
+    const monsters = await prisma.monster.findMany({
+      include: {
+        lootTable: {
+          include: {
+            items: {
+              include: {
+                equipment: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const response: ApiResponse<any> = {
+      success: true,
+      data: monsters,
+    };
+    res.json(response);
+  } catch (error) {
+    const response: ApiResponse<any> = {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+    res.status(500).json(response);
+  }
+});
+
+app.get('/api/monsters/:id', async (req, res): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const monster = await prisma.monster.findUnique({
+      where: { id },
+      include: {
+        lootTable: {
+          include: {
+            items: {
+              include: {
+                equipment: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!monster) {
+      const response: ApiResponse<any> = {
+        success: false,
+        error: 'Monster not found',
+      };
+      return res.status(404).json(response);
+    }
+
+    const response: ApiResponse<any> = {
+      success: true,
+      data: monster,
+    };
+    return res.json(response);
+  } catch (error) {
+    const response: ApiResponse<any> = {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+    return res.status(500).json(response);
+  }
+});
+
+// Dungeon routes
+app.get('/api/dungeons', async (_req, res) => {
+  try {
+    const dungeons = await prisma.dungeon.findMany({
+      include: {
+        monsters: {
+          include: {
+            monster: true,
+          },
+        },
+      },
+    });
+
+    const response: ApiResponse<any> = {
+      success: true,
+      data: dungeons,
+    };
+    res.json(response);
+  } catch (error) {
+    const response: ApiResponse<any> = {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+    res.status(500).json(response);
+  }
+});
+
+app.get('/api/dungeons/:id', async (req, res): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const dungeon = await prisma.dungeon.findUnique({
+      where: { id },
+      include: {
+        monsters: {
+          include: {
+            monster: true,
+          },
+        },
+      },
+    });
+
+    if (!dungeon) {
+      const response: ApiResponse<any> = {
+        success: false,
+        error: 'Dungeon not found',
+      };
+      return res.status(404).json(response);
+    }
+
+    const response: ApiResponse<any> = {
+      success: true,
+      data: dungeon,
+    };
+    return res.json(response);
+  } catch (error) {
+    const response: ApiResponse<any> = {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+    return res.status(500).json(response);
+  }
+});
+
+app.post('/api/players/:id/dungeons/:dungeonId/enter', async (req, res) => {
+  try {
+    const { id, dungeonId } = req.params;
+    
+    // Get or create dungeon progress
+    const progress = await prisma.playerDungeonProgress.upsert({
+      where: {
+        playerId_dungeonId: {
+          playerId: id,
+          dungeonId,
+        },
+      },
+      update: {
+        attempts: { increment: 1 },
+      },
+      create: {
+        playerId: id,
+        dungeonId,
+        progress: 0,
+        attempts: 1,
+      },
+    });
+
+    const response: ApiResponse<any> = {
+      success: true,
+      data: progress,
+    };
+    res.json(response);
+  } catch (error) {
+    const response: ApiResponse<any> = {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+    res.status(500).json(response);
+  }
+});
+
+app.post('/api/players/:id/dungeons/:dungeonId/complete', async (req, res): Promise<any> => {
+  try {
+    const { id, dungeonId } = req.params;
+    const { timeSpent } = req.body;
+
+    const dungeon = await prisma.dungeon.findUnique({
+      where: { id: dungeonId },
+    });
+
+    if (!dungeon) {
+      const response: ApiResponse<any> = {
+        success: false,
+        error: 'Dungeon not found',
+      };
+      return res.status(404).json(response);
+    }
+
+    // Calculate stars based on completion time
+    const stars = GameUtils.calculateStars(timeSpent, dungeon.completionTime || undefined);
+
+    // Create completion record
+    const completion = await prisma.playerDungeonHistory.create({
+      data: {
+        playerId: id,
+        dungeonId,
+        timeSpent,
+        stars,
+        goldEarned: dungeon.goldReward,
+        expEarned: dungeon.expReward,
+      },
+    });
+
+    // Update player
+    await prisma.player.update({
+      where: { id },
+      data: {
+        gold: { increment: dungeon.goldReward },
+        experience: { increment: dungeon.expReward },
+      },
+    });
+
+    const response: ApiResponse<any> = {
+      success: true,
+      data: {
+        ...completion,
+        message: `Dungeon completed with ${stars} stars!`,
+      },
+    };
+    return res.json(response);
+  } catch (error) {
+    const response: ApiResponse<any> = {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+    return res.status(500).json(response);
   }
 });
 
