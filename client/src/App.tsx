@@ -5,6 +5,7 @@ import { EquipmentRack } from './components/EquipmentRack';
 import { CombatArena } from './components/CombatArena';
 import { DungeonExplorer } from './components/DungeonExplorer';
 import { Player, GameUtils } from 'xianxia-shared';
+import { gameApi } from './api/gameApi';
 import './styles/theme.css';
 import './App.css';
 
@@ -12,12 +13,25 @@ function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate loading player data
     const loadPlayer = async () => {
       try {
-        // In a real app, this would be an API call
+        // Try to get first player from API
+        const players = await gameApi.getPlayers();
+        if (players && players.length > 0) {
+          setPlayer(players[0]!);
+        } else {
+          // Create a new player if none exist
+          const newPlayer = await gameApi.createPlayer('Cultivation Master', 'master@xianxia.com');
+          setPlayer(newPlayer);
+        }
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'Failed to load player';
+        console.error('Failed to load player:', err);
+        setError(errorMsg);
+        // Fallback to creating a mock player for development
         const mockPlayer: Player = {
           id: 'player-1',
           username: 'Cultivation Master',
@@ -54,8 +68,6 @@ function App() {
           },
         };
         setPlayer(mockPlayer);
-      } catch (error) {
-        console.error('Failed to load player:', error);
       } finally {
         setLoading(false);
       }
@@ -96,9 +108,9 @@ function App() {
       case 'equipment':
         return <EquipmentRack player={player} />;
       case 'combat':
-        return <CombatArena player={player} />;
+        return <CombatArena player={player} onPlayerUpdate={setPlayer} />;
       case 'dungeons':
-        return <DungeonExplorer player={player} />;
+        return <DungeonExplorer player={player} onPlayerUpdate={setPlayer} />;
       default:
         return <GameDashboard player={player} onPlayerUpdate={setPlayer} />;
     }

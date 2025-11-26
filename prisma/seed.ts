@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { EquipmentSlot, EquipmentRarity, MonsterType, DungeonDifficulty, Effect } from '../src/types';
+import { EquipmentSlot, EquipmentRarity, MonsterType, DungeonDifficulty, Effect } from '../shared/src/types';
 
 const prisma = new PrismaClient();
 
